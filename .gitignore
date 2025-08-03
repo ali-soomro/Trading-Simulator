@@ -1,0 +1,41 @@
+# Build directories
+/build/
+[Cc]MakeCache.txt
+[Cc]MakeFiles/
+cmake_install.cmake
+Makefile
+install_manifest.txt
+
+# Object and binary files
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+*.out
+
+# Debug files
+*.dSYM/
+*.stackdump
+vgcore.*
+
+# Editor swap/temp files
+*~
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.vscode/
+.idea/
+*.user
+*.workspace
+*.code-workspace

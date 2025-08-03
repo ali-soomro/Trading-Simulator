@@ -19,3 +19,7 @@ low-latency systems design, order book mechanics, and latency measurement.
 - [ ] Latency dashboard (99th percentile)
 
 ## How to Build
+mkdir build
+cd build
+cmake ..
+make
