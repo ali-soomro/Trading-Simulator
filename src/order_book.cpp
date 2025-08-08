@@ -1,8 +1,11 @@
 #include "order_book.hpp"
 #include <algorithm>
 #include <sstream>
+#include <mutex>
 
 std::vector<std::string> OrderBook::processOrder(Side side, int qty, double price) {
+    std::lock_guard<std::mutex> lock(mtx_);
+
     std::vector<std::string> out;
     if (qty <= 0 || price <= 0.0) {
         out.emplace_back("ERROR Invalid order");
@@ -61,4 +64,29 @@ std::vector<std::string> OrderBook::processOrder(Side side, int qty, double pric
         out.push_back(oss.str());
     }
     return out;
+}
+
+bool OrderBook::hasBestBid() const {
+    std::lock_guard<std::mutex> lock(mtx_);
+    return !bids_.empty();
+}
+bool OrderBook::hasBestAsk() const {
+    std::lock_guard<std::mutex> lock(mtx_);
+    return !asks_.empty();
+}
+double OrderBook::bestBidPrice() const {
+    std::lock_guard<std::mutex> lock(mtx_);
+    return bids_.empty() ? 0.0 : bids_.begin()->first;
+}
+int OrderBook::bestBidQty() const {
+    std::lock_guard<std::mutex> lock(mtx_);
+    return bids_.empty() ? 0 : bids_.begin()->second;
+}
+double OrderBook::bestAskPrice() const {
+    std::lock_guard<std::mutex> lock(mtx_);
+    return asks_.empty() ? 0.0 : asks_.begin()->first;
+}
+int OrderBook::bestAskQty() const {
+    std::lock_guard<std::mutex> lock(mtx_);
+    return asks_.empty() ? 0 : asks_.begin()->second;
 }
