@@ -1,22 +1,23 @@
 #pragma once
-
 #include <atomic>
 #include <string>
 #include <cstdint>
+#include <vector>
 
-// A simple load bot that connects to an exchange server and sends random orders.
 class Bot {
 public:
     Bot(std::string host, uint16_t port, int clients, int ordersPerClient);
 
-    // Runs the bot: spawns all client threads, returns average RTT in microseconds
+    // Average RTT only (existing behaviour)
     long long run();
 
-private:
-    // Worker function for each simulated client
-    void worker(int id, std::atomic<long long>& rttSum);
+    // NEW: collect all RTT samples (microseconds)
+    std::vector<long long> run_collect();
 
-    // Connects once to the exchange, returns socket fd or -1 on error
+private:
+    void worker(int id, std::atomic<long long>& rttSum);
+    void worker_collect(int id, std::vector<long long>& outSamples);
+
     int connect_once() const;
 
     std::string host_;
