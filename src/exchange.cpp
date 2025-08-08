@@ -12,6 +12,7 @@
 #include <atomic>
 #include <unistd.h>
 
+// --- NEW: ignore SIGPIPE + safe_send helper ---
 static std::atomic<bool> g_running{true};
 static int g_server_fd = -1;
 
@@ -19,6 +20,18 @@ static void handle_sigint(int) {
     g_running = false;
     if (g_server_fd >= 0) { close(g_server_fd); g_server_fd = -1; }
     std::cerr << "\n[Signal] SIGINT received. Shutting down server...\n";
+}
+
+static ssize_t safe_send(int fd, const void* buf, size_t len) {
+#ifdef MSG_NOSIGNAL         // Linux/BSD
+    return send(fd, buf, len, MSG_NOSIGNAL);
+#elif defined(SO_NOSIGPIPE) // macOS
+    int one = 1;
+    setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
+    return send(fd, buf, len, 0);
+#else
+    return send(fd, buf, len, 0);
+#endif
 }
 
 // Read one '\n'-terminated line; false on EOF/error.
@@ -47,7 +60,7 @@ static void serve_client(int client_fd, OrderBook& book) {
             long long ts_us = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
             std::ostringstream bye; bye << "ACK " << ts_us << "\nBYE\n";
             std::string payload = bye.str();
-            (void)send(client_fd, payload.c_str(), payload.size(), 0);
+            (void)safe_send(client_fd, payload.c_str(), payload.size());
             std::cout << "Client requested QUIT.\n";
             break;
         }
@@ -70,8 +83,9 @@ static void serve_client(int client_fd, OrderBook& book) {
         }
 
         std::string payload = wire.str();
-        if (send(client_fd, payload.c_str(), payload.size(), 0) < 0) {
-            perror("send");
+        if (safe_send(client_fd, payload.c_str(), payload.size()) < 0) {
+            // If the client closed early, just stop serving this client.
+            // perror("send"); // optional: comment out to reduce noise
             break;
         }
     }
@@ -81,6 +95,7 @@ static void serve_client(int client_fd, OrderBook& book) {
 
 int main() {
     std::signal(SIGINT, handle_sigint);
+    std::signal(SIGPIPE, SIG_IGN);   // <-- NEW: ignore SIGPIPE globally
 
     // 1) Socket
     g_server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -97,7 +112,6 @@ int main() {
     std::cout << "Exchange waiting for connections... (Ctrl-C to quit)\n";
 
     OrderBook book;
-    std::vector<std::thread> gc; gc.reserve(128); // optional joiners if you don't detach
 
     // 3) Accept loop – one thread per connection
     while (g_running) {
@@ -109,15 +123,8 @@ int main() {
             continue;
         }
         std::cout << "Client connected!\n";
-
-        // Spawn a handler thread
-        std::thread th(serve_client, client_fd, std::ref(book));
-        th.detach();  // fire-and-forget – fine for a simple sim
-        // If you prefer to join later, do: gc.emplace_back(std::move(th));
+        std::thread(serve_client, client_fd, std::ref(book)).detach();
     }
-
-    // If you didn't detach, join here:
-    // for (auto& t : gc) if (t.joinable()) t.join();
 
     if (g_server_fd >= 0) close(g_server_fd);
     std::cout << "Server shut down.\n";

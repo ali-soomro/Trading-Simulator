@@ -9,4 +9,5 @@ target_link_libraries(exchange PRIVATE orderbook Threads::Threads)
 add_executable(client client.cpp)
 
 add_executable(bot bot.cpp)
+target_include_directories(bot PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(bot PRIVATE Threads::Threads)
