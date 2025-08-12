@@ -53,11 +53,7 @@ Designed to replicate core components of exchange infrastructure, with a focus o
 ## 🛠 Build & Run
 
 ```bash
-# Clone
-git clone git@github.com:username/low-latency-trading-simulator.git
-cd low-latency-trading-simulator
-
-# Build with CMake
+# Build with CMake from the root of the repository
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
