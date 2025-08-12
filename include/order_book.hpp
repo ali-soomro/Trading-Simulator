@@ -4,7 +4,9 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
+#include <utility>
 
 enum class Side { Buy, Sell };
 
@@ -17,16 +19,21 @@ struct RestingOrder {
 class OrderBook {
 public:
     // Book operates in integer ticks. Caller provides a formatter (ticks -> string).
-    // Emits human-readable events:
-    //   TRADE <qty> @ <price_str> against id <id>
-    //   ORDER_ADDED BUY|SELL <qty> @ <price_str> id <id>
-    //   BEST_BID <price_str> x <qty>
-    //   BEST_ASK <price_str> x <qty>
     std::vector<std::string> processOrder(Side side,
                                           int qty,
                                           int64_t price_ticks,
                                           int64_t order_id,
                                           const std::function<std::string(int64_t)>& fmt_price);
+
+    // Cancel / Replace
+    std::vector<std::string> cancel(int64_t order_id,
+                                    const std::function<std::string(int64_t)>& fmt_price);
+
+    std::vector<std::string> replace(int64_t old_id,
+                                     int new_qty,
+                                     int64_t new_price_ticks,
+                                     int64_t new_id,
+                                     const std::function<std::string(int64_t)>& fmt_price);
 
     // Diagnostics (engine thread owns the book)
     bool    hasBestBid()   const { return !bids_.empty(); }
@@ -38,11 +45,22 @@ public:
 
 private:
     using Level = std::deque<RestingOrder>;
+
     static int levelQty(const Level& lvl) {
         int sum = 0;
         for (const auto& ro : lvl) sum += ro.qty;
         return sum;
     }
+
+    void refreshSnapshots(std::vector<std::string>& out,
+                          const std::function<std::string(int64_t)>& fmt_price) const;
+
+    // Distinct helpers to avoid overload ambiguity
+    bool eraseFromBidsLevel(std::map<int64_t, Level, std::greater<int64_t>>::iterator lvl_it, int64_t id);
+    bool eraseFromAsksLevel(std::map<int64_t, Level>::iterator lvl_it, int64_t id);
+
+    // Index of id -> (side, price_ticks)
+    std::unordered_map<int64_t, std::pair<Side,int64_t>> index_;
 
     // Price → FIFO of orders; bids highest-first, asks lowest-first
     std::map<int64_t, Level, std::greater<int64_t>> bids_;
