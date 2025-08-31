@@ -30,6 +30,7 @@ std::vector<std::string> OrderBook::processOrder(Side side,
     int remaining = qty;
 
     if (side == Side::Buy) {
+        // BUY incoming => BUY is the aggressor when trades occur
         while (remaining > 0 && !asks_.empty() && asks_.begin()->first <= price_ticks) {
             auto lvl_it = asks_.begin();
             auto& lvl = lvl_it->second;
@@ -38,7 +39,8 @@ std::vector<std::string> OrderBook::processOrder(Side side,
                 int trade_qty = std::min(remaining, resting.qty);
                 {
                     std::ostringstream oss;
-                    oss << "TRADE " << trade_qty << " @ " << fmt_price(lvl_it->first)
+                    // Add BUY as aggressor
+                    oss << "TRADE BUY " << trade_qty << " @ " << fmt_price(lvl_it->first)
                         << " against id " << resting.id;
                     out.push_back(oss.str());
                 }
@@ -61,6 +63,7 @@ std::vector<std::string> OrderBook::processOrder(Side side,
             out.push_back(oss.str());
         }
     } else { // Sell
+        // SELL incoming => SELL is the aggressor when trades occur
         while (remaining > 0 && !bids_.empty() && bids_.begin()->first >= price_ticks) {
             auto lvl_it = bids_.begin();
             auto& lvl = lvl_it->second;
@@ -69,7 +72,8 @@ std::vector<std::string> OrderBook::processOrder(Side side,
                 int trade_qty = std::min(remaining, resting.qty);
                 {
                     std::ostringstream oss;
-                    oss << "TRADE " << trade_qty << " @ " << fmt_price(lvl_it->first)
+                    // Add SELL as aggressor
+                    oss << "TRADE SELL " << trade_qty << " @ " << fmt_price(lvl_it->first)
                         << " against id " << resting.id;
                     out.push_back(oss.str());
                 }
@@ -96,8 +100,6 @@ std::vector<std::string> OrderBook::processOrder(Side side,
     refreshSnapshots(out, fmt_price);
     return out;
 }
-
-// --- renamed helpers ---
 
 bool OrderBook::eraseFromBidsLevel(std::map<int64_t, Level, std::greater<int64_t>>::iterator lvl_it, int64_t id) {
     auto& lvl = lvl_it->second;
