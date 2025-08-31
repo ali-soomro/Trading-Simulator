@@ -12,7 +12,7 @@ Designed to replicate core components of exchange infrastructure, with a focus o
 
 ### Exchange + Bot
 ![Exchange Server](assets/exchange.png)
-![Bot Load Test](assets/Bot_Load_Test.png)
+![Bot Load Test](assets/Bot_Load_test.png)
 
 ### Market Data Feed
 ![UDP Listener](assets/md_listen.png)
