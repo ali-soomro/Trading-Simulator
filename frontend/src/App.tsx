@@ -29,8 +29,15 @@ export default function App() {
       if (msg.type === "BEST_BID" || msg.type === "BEST_ASK") {
         setBest(b => updateBest(b, msg));
       } else if (msg.type === "TRADE") {
-        setTape(t => [{ side: "UNK" as const, px: msg.px!, qty: msg.qty!, ts: Date.now() }, ...t].slice(0, 200));
-      } else if (line.startsWith("RTT")) {
+            const raw = msg as any;
+            const side: "BUY" | "SELL" | "UNK" =
+                raw.side === "BUY" || raw.side === "SELL" ? raw.side : "UNK";
+
+            setTape(t => [
+                { side, px: Number(raw.px), qty: Number(raw.qty), ts: Date.now() },
+                ...t
+            ].slice(0, 200));
+        } else if (line.startsWith("RTT")) {
         const parts = line.split(/\s+/);
         const rtt = Number(parts[1]);
         if (!Number.isNaN(rtt)) {
