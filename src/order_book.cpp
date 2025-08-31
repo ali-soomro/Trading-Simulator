@@ -2,6 +2,41 @@
 #include <algorithm>
 #include <sstream>
 
+void OrderBook::clear() {
+    bids_.clear();
+    asks_.clear();
+    index_.clear();
+}
+
+std::vector<std::string> OrderBook::seed(Side side,
+                                         int qty,
+                                         int64_t price_ticks,
+                                         int64_t order_id,
+                                         const std::function<std::string(int64_t)>& fmt_price) {
+    std::vector<std::string> out;
+    if (qty <= 0 || price_ticks <= 0) {
+        out.emplace_back("ERROR Invalid seed");
+        return out;
+    }
+    if (side == Side::Buy) {
+        auto& lvl = bids_[price_ticks];
+        lvl.push_back(RestingOrder{order_id, qty});
+        index_[order_id] = {Side::Buy, price_ticks};
+        std::ostringstream oss;
+        oss << "ORDER_ADDED BUY " << qty << " @ " << fmt_price(price_ticks) << " id " << order_id;
+        out.push_back(oss.str());
+    } else {
+        auto& lvl = asks_[price_ticks];
+        lvl.push_back(RestingOrder{order_id, qty});
+        index_[order_id] = {Side::Sell, price_ticks};
+        std::ostringstream oss;
+        oss << "ORDER_ADDED SELL " << qty << " @ " << fmt_price(price_ticks) << " id " << order_id;
+        out.push_back(oss.str());
+    }
+    refreshSnapshots(out, fmt_price);
+    return out;
+}
+
 void OrderBook::refreshSnapshots(std::vector<std::string>& out,
                                  const std::function<std::string(int64_t)>& fmt_price) const {
     if (!bids_.empty()) {

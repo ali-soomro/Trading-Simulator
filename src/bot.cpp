@@ -65,21 +65,72 @@ static long long percentile(std::vector<long long>& v, double p) {
     return v[idx];
 }
 
+// Send one line and wait for a single '\n'-terminated reply (ACK or first line)
+static bool send_and_wait_ack(int s, const std::string& line) {
+    if (send(s, line.c_str(), line.size(), 0) < 0) return false;
+    std::string resp; resp.reserve(256);
+    char ch;
+    while (true) {
+        ssize_t n = recv(s, &ch, 1, 0);
+        if (n <= 0) return false;
+        if (ch == '\n') break;
+        resp.push_back(ch);
+        if (resp.size() > 4096) break;
+    }
+    return true;
+}
+
 int main(int argc, char** argv) {
     std::string host = "127.0.0.1";
     uint16_t port = 8080;
     int clients = 4;
-    int orders = 200;
+    int orders  = 200;
     std::string csvPath;
 
-    // Args: [clients] [orders] [--csv file]
+    // NEW demo flags
+    bool demoBuy  = false; // seed asks then lift them
+    bool demoSell = false; // seed bids then hit them
+
+    // Args: [clients] [orders] [--csv file] [--demo-buy] [--demo-sell]
     for (int i=1; i<argc; ++i) {
         std::string a = argv[i];
         if (a == "--csv" && i+1 < argc) csvPath = argv[++i];
-        else if (i == 1 && a.find("--") != 0) { clients = std::atoi(argv[i]); }
-        else if (i == 2 && a.find("--") != 0) { orders  = std::atoi(argv[i]); }
+        else if (a == "--demo-buy")  demoBuy  = true;
+        else if (a == "--demo-sell") demoSell = true;
+        else if (i == 1 && a.rfind("--",0) != 0) { clients = std::atoi(argv[i]); }
+        else if (i == 2 && a.rfind("--",0) != 0) { orders  = std::atoi(argv[i]); }
     }
 
+    // --- OPTIONAL DEMO PRELUDE ---
+    if (demoBuy || demoSell) {
+        int s = socket(AF_INET, SOCK_STREAM, 0);
+        if (s >= 0) {
+#ifdef TCP_NODELAY
+            int one = 1; setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
+#endif
+            sockaddr_in a{}; a.sin_family = AF_INET; a.sin_port = htons(port);
+            inet_pton(AF_INET, host.c_str(), &a.sin_addr);
+            if (connect(s, (sockaddr*)&a, sizeof(a)) == 0) {
+                // BUY demo: create resting asks, then send BUY that crosses
+                if (demoBuy) {
+                    send_and_wait_ack(s, "NEW SELL 200 @ 50.30\n");
+                    send_and_wait_ack(s, "NEW SELL 200 @ 50.28\n");
+                    send_and_wait_ack(s, "NEW BUY  350 @ 50.35\n");   // ⇒ TRADE BUY ...
+                }
+                // SELL demo: create resting bids, then send SELL that crosses
+                if (demoSell) {
+                    send_and_wait_ack(s, "NEW BUY  200 @ 50.20\n");
+                    send_and_wait_ack(s, "NEW BUY  200 @ 50.18\n");
+                    send_and_wait_ack(s, "NEW SELL 350 @ 50.15\n");   // ⇒ TRADE SELL ...
+                }
+                const char* bye = "QUIT\n"; (void)send(s, bye, strlen(bye), 0);
+            }
+            close(s);
+        }
+        return 0; // exit after demo; remove this 'return' if you want to run load test too
+    }
+
+    // --- NORMAL LOAD TEST BELOW (unchanged) ---
     std::vector<std::thread> ts;
     std::vector<std::vector<long long>> perThread(clients);
 

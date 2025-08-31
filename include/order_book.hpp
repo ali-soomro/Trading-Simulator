@@ -18,6 +18,15 @@ struct RestingOrder {
 
 class OrderBook {
 public:
+    void clear();
+
+    // Add resting liquidity without matching (admin/seed path)
+    std::vector<std::string> seed(Side side,
+                                  int qty,
+                                  int64_t price_ticks,
+                                  int64_t order_id,
+                                  const std::function<std::string(int64_t)>& fmt_price);
+
     // Book operates in integer ticks. Caller provides a formatter (ticks -> string).
     std::vector<std::string> processOrder(Side side,
                                           int qty,
