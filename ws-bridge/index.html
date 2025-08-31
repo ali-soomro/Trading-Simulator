@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Trading Simulator Dashboard</title>
+</head>
+<body>
+  <h1>Market Data Feed</h1>
+  <ul id="feed"></ul>
+
+  <script>
+    const ws = new WebSocket("ws://localhost:8081");
+    ws.onopen = () => console.log("Connected to WebSocket");
+    ws.onmessage = (event) => {
+      const li = document.createElement("li");
+      li.textContent = event.data;
+      document.getElementById("feed").appendChild(li);
+    };
+    ws.onclose = () => console.log("Disconnected");
+  </script>
+</body>
+</html>

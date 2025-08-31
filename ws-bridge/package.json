@@ -1,0 +1,14 @@
+{
+  "name": "ws-bridge",
+  "version": "1.0.0",
+  "description": "UDP to WebSocket bridge for low-latency trading simulator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}
