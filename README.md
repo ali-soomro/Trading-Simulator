@@ -5,6 +5,23 @@ Designed to replicate core components of exchange infrastructure, with a focus o
 
 ---
 
+## 🎥 Demo
+
+### Dashboard (React frontend)
+![Dashboard Screenshot](assets/Dashboard_Working.png)
+
+### Exchange + Bot
+![Exchange Server](assets/exchange.png)
+![Bot Load Test](assets/Bot_Load_Test.png)
+
+### Market Data Feed
+![UDP Listener](assets/md_listen.png)
+
+### Unit Tests
+![GoogleTest](assets/tests.png)
+
+---
+
 ## 🚀 Features
 
 - **Multi-client TCP matching engine** with price–time priority  
