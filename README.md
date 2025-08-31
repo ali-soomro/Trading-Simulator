@@ -11,7 +11,7 @@ Designed to replicate core components of exchange infrastructure, with a focus o
 ![Dashboard Screenshot](assets/Dashboard_Working.png)
 
 ### Exchange + Bot
-![Exchange Server](assets/exchange.png)
+![Exchange Server](assets/Client_And_Server.png)
 ![Bot Load Test](assets/Bot_Load_test.png)
 
 ### Market Data Feed
