@@ -7,7 +7,7 @@ Designed to replicate core components of exchange infrastructure, with a focus o
 
 ## 📸 Screenshots
 
-### Dashboard (React frontend)
+### Dashboard (React Frontend C++ Backend)
 ![Dashboard Screenshot](assets/Dashboard_Working.png)
 
 ### Exchange + Bot
