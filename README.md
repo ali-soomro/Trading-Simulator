@@ -5,7 +5,7 @@ Designed to replicate core components of exchange infrastructure, with a focus o
 
 ---
 
-## 🎥 Demo
+## 📸 Screenshots
 
 ### Dashboard (React frontend)
 ![Dashboard Screenshot](assets/Dashboard_Working.png)
@@ -13,9 +13,6 @@ Designed to replicate core components of exchange infrastructure, with a focus o
 ### Exchange + Bot
 ![Exchange Server](assets/Client_And_Server.png)
 ![Bot Load Test](assets/Bot_Load_test.png)
-
-### Market Data Feed
-![UDP Listener](assets/md_listen.png)
 
 ### Unit Tests
 ![GoogleTest](assets/tests.png)
@@ -94,9 +91,3 @@ npm start
 ```
 
 ---
-
-## 📸 Screenshots
-_Coming soon: example dashboard with order book, trades, and latency chart._
-
-## 🔗 Links
-- [GitHub Repository](https://github.com/ali-soomro/low-latency-trading-simulator)
