@@ -5,6 +5,16 @@ Designed to replicate core components of exchange infrastructure, with a focus o
 
 ---
 
+## 📑 Table of Contents
+- [📸 Screenshots](#-screenshots)
+- [🚀 Features](#-features)
+- [📦 Components](#-components)
+- [🏗 Architecture](#-architecture)
+- [📊 Performance](#-performance)
+- [🛠 Build & Run](#-build--run)
+
+---
+
 ## 📸 Screenshots
 
 ### Dashboard (React Frontend C++ Backend)
