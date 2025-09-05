@@ -51,6 +51,38 @@ Designed to replicate core components of exchange infrastructure, with a focus o
 
 ---
 
+## 📐 Architecture
+
+```mermaid
+flowchart LR
+  subgraph Clients
+    C1[Manual Client]
+    C2[Bot Load Tester]
+  end
+
+  subgraph Exchange [Exchange Server]
+    TCP[(TCP Listener)]
+    Q[[Thread-Safe Queue]]
+    M[Matching Engine - Order Book]
+    UDP[(UDP Publisher)]
+  end
+
+  subgraph Observers
+    F1[React Frontend Dashboard]
+    F2[CLI md_listen]
+  end
+
+  C1 -->|Orders TCP| TCP
+  C2 -->|Orders TCP| TCP
+  TCP --> Q
+  Q --> M
+  M -->|Market Data UDP| UDP
+  UDP --> F1
+  UDP --> F2
+```
+
+---
+
 ## 📊 Performance
 
 **Test environment**:  
