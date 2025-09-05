@@ -115,7 +115,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j
 
 # Start the exchange (must be running before clients or bot connect)
-./src/exchange
+./exchange
 
 # Start WebSocket bridge
 cd ws-bridge
@@ -128,8 +128,8 @@ npm install
 npm start
 
 # In another terminal, run a client or bot (optional)
-./src/client
-./src/bot 4 200
+./client
+./bot 4 200 (arguments optional)
 ```
 
 ---
